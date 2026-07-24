@@ -64,11 +64,35 @@ npm run build
 php artisan serve
 ```
 
+## تشغيل باستخدام Docker
+
+```bash
+# بناء وتشغيل الحاويات
+sudo docker compose up --build -d
+
+# تشغيل migrations والـ seeders
+sudo docker compose exec app php artisan migrate --force
+sudo docker compose exec app php artisan db:seed
+```
+
+المتغيرات البيئية الأساسية للاستضافة:
+
+- `APP_ENV=production`
+- `APP_DEBUG=false`
+- `APP_URL=https://your-domain.com`
+- `ASSET_URL=https://your-domain.com`
+- `DB_CONNECTION=pgsql`
+- `DB_HOST=your-db-host`
+- `DB_PORT=5432`
+- `DB_DATABASE=your-db-name`
+- `DB_USERNAME=your-db-user`
+- `DB_PASSWORD=your-db-password`
+
 ## بيانات الدخول التجريبية
 
 | البريد الإلكتروني | كلمة المرور | الصلاحية |
-|---|---|---|
-| admin@example.com | password | مدير |
+| ----------------- | ----------- | -------- |
+| admin@example.com | password    | مدير     |
 
 **يرجى تغيير كلمة المرور فوراً في بيئة الإنتاج.**
 
@@ -76,16 +100,16 @@ php artisan serve
 
 ### جدول `warranties`
 
-| الحقل | النوع | الوصف |
-|---|---|---|
-| id | bigint | المفتاح الأساسي |
-| public_token | uuid | رمز فريد للرابط العام (فريد) |
-| device_type | varchar(150) | نوع الجهاز |
-| imei | varchar(15) | رقم IMEI (فريد، يمكن أن يكون فارغاً) |
-| warranty_expires_at | timestamp | تاريخ انتهاء الضمان |
-| activated_at | timestamp | تاريخ التفعيل |
-| created_at | timestamp | تاريخ الإنشاء |
-| updated_at | timestamp | تاريخ التحديث |
+| الحقل               | النوع        | الوصف                                |
+| ------------------- | ------------ | ------------------------------------ |
+| id                  | bigint       | المفتاح الأساسي                      |
+| public_token        | uuid         | رمز فريد للرابط العام (فريد)         |
+| device_type         | varchar(150) | نوع الجهاز                           |
+| imei                | varchar(15)  | رقم IMEI (فريد، يمكن أن يكون فارغاً) |
+| warranty_expires_at | timestamp    | تاريخ انتهاء الضمان                  |
+| activated_at        | timestamp    | تاريخ التفعيل                        |
+| created_at          | timestamp    | تاريخ الإنشاء                        |
+| updated_at          | timestamp    | تاريخ التحديث                        |
 
 ## الصفحات
 
