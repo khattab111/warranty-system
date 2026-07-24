@@ -59,4 +59,4 @@ RUN chmod +x start.sh
 
 EXPOSE 10000
 
-CMD ["./entrypoint.sh"]
+CMD ["./start.sh"]
