@@ -1,64 +1,62 @@
-FROM php:8.3-fpm
+# ===== Stage 1: Node build =====
+FROM node:22 AS node
 
-ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    unzip \
-    nodejs \
-    npm \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libicu-dev \
-    libonig-dev \
-    libpq-dev \
-    libzip-dev \
-    zlib1g-dev \
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+
+# ===== Stage 2: PHP app =====
+FROM php:8.3-cli-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        default-mysql-client \
+        git \
+        libfreetype6-dev \
+        libicu-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libxml2-dev \
+        libzip-dev \
+        libpq-dev \
+        unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
-        pdo \
-        pdo_pgsql \
-        pgsql \
+    && docker-php-ext-install -j"$(nproc)" \
+        bcmath \
+        exif \
         gd \
         intl \
+        pcntl \
+        pdo_mysql \
+        pdo_pgsql \
+        pgsql \
         zip \
-        bcmath \
-    && curl -sS https://getcomposer.org/installer | php -- \
-        --install-dir=/usr/local/bin \
-        --filename=composer \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /var/www
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY composer.json composer.lock ./
-COPY package.json package-lock.json ./
+WORKDIR /var/www/html
 
-RUN composer install \
-        --no-interaction \
-        --prefer-dist \
-        --no-dev \
-        --no-scripts \
-    && npm ci --ignore-scripts
+COPY . .
 
-COPY . /var/www
+COPY --from=node /app/public/build ./public/build
 
-RUN composer dump-autoload \
-        --optimize \
-        --no-dev \
-        --no-interaction \
-    && php artisan package:discover --ansi \
-    && npm run build \
-    && chown -R www-data:www-data \
-        /var/www/storage \
-        /var/www/bootstrap/cache
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN php artisan package:discover
+
+RUN php artisan filament:assets || true
+
+RUN chmod +x start.sh
 
 EXPOSE 10000
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["./entrypoint.sh"]

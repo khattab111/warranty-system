@@ -1,17 +1,17 @@
 #!/bin/sh
-
 set -e
 
-cd /var/www
+echo "Starting AlBaik Store..."
 
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
+php artisan optimize:clear || true
+
+# php artisan migrate --force
+php artisan migrate:fresh --seed --force
+
 
 php artisan storage:link || true
 
-php artisan migrate --force --seed
+php artisan config:cache
+php artisan view:cache
 
-exec php artisan serve \
-    --host=0.0.0.0 \
-    --port="${PORT:-10000}"
+exec php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
