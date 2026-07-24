@@ -5,18 +5,25 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Warranty;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        if (User::where('email', 'admin@example.com')->doesntExist()) {
-            User::factory()->create([
-                'name' => 'Admin',
-                'email' => 'admin@example.com',
-                'password' => bcrypt('password'),
-            ]);
-        }
+                User::updateOrCreate(
+            [
+                'email' => env('ADMIN_EMAIL', 'admin@example.com'),
+            ],
+            [
+                'name' => env('ADMIN_NAME', 'Admin'),
+                'password' => Hash::make(
+                    env('ADMIN_PASSWORD', 'change-this-password')
+                ),
+                'role' => 'admin',
+            ]
+        );
+
 
         // Warranty::factory(5)->inactive()->create();
 
