@@ -11,18 +11,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-                User::updateOrCreate(
-            [
-                'email' => env('ADMIN_EMAIL', 'admin@example.com'),
-            ],
-            [
-                'name' => env('ADMIN_NAME', 'Admin'),
-                'password' => Hash::make(
-                    env('ADMIN_PASSWORD', 'change-this-password')
-                ),
-                'role' => 'admin',
-            ]
-        );
+                 $this->call([
+            AdminUserSeeder::class,
+        ]);
 
 
         // Warranty::factory(5)->inactive()->create();
