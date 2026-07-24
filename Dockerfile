@@ -33,25 +33,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /var/www
 
-# نسخ ملفات الاعتماد أولًا للاستفادة من Docker cache
 COPY composer.json composer.lock ./
 COPY package.json package-lock.json ./
 
-# لا تشغّل Laravel scripts لأن artisan لم يُنسخ بعد
 RUN composer install \
         --no-interaction \
         --prefer-dist \
+        --no-dev \
         --no-scripts \
     && npm ci --ignore-scripts
 
-# نسخ المشروع كاملًا، ومن ضمنه artisan
 COPY . /var/www
 
-# تشغيل Composer scripts بعد توفر artisan
-RUN composer dump-autoload --optimize --no-interaction \
+RUN composer dump-autoload \
+        --optimize \
+        --no-dev \
+        --no-interaction \
     && php artisan package:discover --ansi \
     && npm run build \
-    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+    && chown -R www-data:www-data \
+        /var/www/storage \
+        /var/www/bootstrap/cache
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
